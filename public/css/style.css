@@ -1,0 +1,14 @@
+body {
+    background-color: aqua;
+}
+
+.searchbar {
+    visibility: hidden ;
+    transform: translateY(-100px);
+
+}
+
+.searchbar.open {
+    transform: translateY(0);
+    transition: transform 0.1s;
+}
