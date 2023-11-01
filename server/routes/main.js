@@ -80,7 +80,7 @@ router.get('/post/:id', async (req,res) => {
             description: "Simple Blog created with NodeJS",
             currentRoute: `/post/${slug}`
         }
-        res.render('post', { locals, data, currentRoute });
+        res.render('post', { locals, data, currentRoute: `/post/${slug}` });
 
 
     } catch (error){
