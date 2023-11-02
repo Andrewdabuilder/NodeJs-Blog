@@ -16,7 +16,7 @@ router.get('', async (req,res) => {
     let perPage = 10;
     let page = req.query.page || 1;
 
-    const data = await Post.aggregate([ { $sort: { createdAt: -1 } } ])
+    const data = await Post.aggregate([ { "$sort": { createdAt: -1 } } ])
     .skip(perPage * page - perPage)
     .limit(perPage)
     .exec();
@@ -27,7 +27,7 @@ router.get('', async (req,res) => {
 
 
     try{
-        const data = await Post.find();
+        // const data = await Post.find();
         res.render('index', { locals,
              data,
              current: page,
