@@ -14,7 +14,11 @@ const { isActiveRoute } = require('./server/helpers/routeHelpers');
 const app = express();
 const PORT = 3000 || process.env.PORT;
 
+//Multer for image upload and storage
 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // Connect to the DB
 connectDB();

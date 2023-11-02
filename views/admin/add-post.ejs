@@ -2,15 +2,26 @@
 <div class="admin-title">
     <h2>Add New Post</h2>
 
-    <form action="/add-post" method="POST">
+    <form action="/add-post" method="POST" enctype="multipart/form-data">
 
         <label for="title">Title</label>
         <input type="text" placeholder="Post Title" name="title">
 
         <label for="body">Content</label>
         <textarea name="body" cols="50" rows="10"></textarea>
+        
+        
+
         <input type="submit" value ="Add" class="delete">
+        <form class="uploadForm" action="/upload" method="post" enctype="multipart/formdata">
+            <label class="control-label">Select File</label>
+            <input name="upl" id="input-1" type="file" class="file">
+            <input type="submit" value="submit" />
+        </form>
     
     </form>
+
+
+
 
 </div>

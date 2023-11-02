@@ -5,6 +5,18 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// for image uploading function 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+const Grid = require('gridfs-stream');
+const mongo = require('mongodb');
+const database = require('../config/db');
+
+const mongoose = require('mongoose');
+
+
+
 const adminLayout = '../views/layouts/admin';
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -192,7 +204,7 @@ router.post('/add-post', authMiddleware, async (req, res) => {
   
   
   try {
-    console.log(req.body);
+    
 
     try {
       const newPost = new Post( {
@@ -200,6 +212,26 @@ router.post('/add-post', authMiddleware, async (req, res) => {
         body: req.body.body
 
       })
+      var conn = await mongoose.connect(process.env.MONGODB_URI);
+      var gfs = new Grid(conn, mongoose.mongo);
+      // for uploading images
+      console.log(req.file.filename);
+      var part = req.file;
+      var writeStream = gfs.createWriteStream({
+          filename: req.file.filename,
+          mode: 'w',
+          content_type: req.file.mimetype,
+      })
+
+      
+        writeStream.on('close', function() {
+          return res.status(200).send({
+          message: 'Success'
+      });
+    });
+      writeStream.end();
+      
+
       await Post.create(newPost);
       res.redirect('/dashboard');
 
@@ -323,6 +355,32 @@ router.get('/logout', authMiddleware, async (req, res) => {
   }
   
 
+});
+
+/**
+ * POST /
+ * Admin - Upload photo
+ */
+
+
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+      const gfs = new Grid(mongoose.connection.db, mongoose.mongo);
+      const writeStream = gfs.createWriteStream({
+          filename: req.file.originalname,
+          mode: 'w',
+          content_type: req.file.mimetype,
+      });
+      fs.createReadStream(req.file.path).pipe(writeStream);
+      writeStream.on('close', (file) => {
+          fs.unlink(req.file.path, (err) => {
+              if (err) throw err;
+              return res.json({ file });
+          });
+      });
+  } catch (err) {
+      return res.status(400).json({ message: 'Error uploading file', error: err });
+  }
 });
 
 
