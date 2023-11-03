@@ -191,6 +191,33 @@ router.get('/add-post', authMiddleware, async (req, res) => {
     console.log(error);
     
   }
+});
+  /**
+ * GET /
+ * Admin - upload photo
+ */
+
+router.get('/upload-photo', authMiddleware, async (req, res) => {
+  
+  
+  try {
+    const locals = {
+      title: 'Upload Photo',
+      description: ''
+    }
+
+    const data = await Post.find();
+    res.render('admin//upload-photo', {
+      locals,
+      layout: adminLayout
+
+    });
+
+
+  } catch (error) {
+    console.log(error);
+    
+  }
   
 
 });
@@ -200,7 +227,7 @@ router.get('/add-post', authMiddleware, async (req, res) => {
  * Admin - Create New Post
  */
 
-router.post('/add-post', authMiddleware, async (req, res) => {
+router.post('/add-post', authMiddleware, upload.single('file'), async(req, res) => {
   
   
   try {
@@ -212,11 +239,11 @@ router.post('/add-post', authMiddleware, async (req, res) => {
         body: req.body.body
 
       })
-      var conn = await mongoose.connect(process.env.MONGODB_URI);
+      var conn = mongoose.connect(process.env.MONGODB_URI);
       var gfs = new Grid(conn, mongoose.mongo);
       // for uploading images
       console.log(req.file.filename);
-      var part = req.file;
+     
       var writeStream = gfs.createWriteStream({
           filename: req.file.filename,
           mode: 'w',
