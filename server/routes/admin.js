@@ -14,6 +14,8 @@ const mongo = require('mongodb');
 const database = require('../config/db');
 
 const mongoose = require('mongoose');
+const conn = mongoose.connect(process.env.MONGODB_URI);
+
 
 
 
@@ -197,7 +199,7 @@ router.get('/add-post', authMiddleware, async (req, res) => {
  * Admin - upload photo
  */
 
-router.get('/upload-photo', authMiddleware, async (req, res) => {
+router.get('/upload', authMiddleware, async (req, res) => {
   
   
   try {
@@ -207,7 +209,7 @@ router.get('/upload-photo', authMiddleware, async (req, res) => {
     }
 
     const data = await Post.find();
-    res.render('admin/upload-photo', {
+    res.render('admin/upload', {
       locals,
       layout: adminLayout
 
@@ -281,43 +283,36 @@ router.post('/add-post', authMiddleware,  async(req, res) => {
  * Admin - Add new photo
  */
 
-router.post('/upload-photo', authMiddleware,  upload.single('file'), async(req, res, next) => {
+router.post('/upload', authMiddleware,  upload.single('file'), async(req, res) => {
   
   
   try {
     
 
       console.log(req.file.originalname);
-      var conn = await mongoose.connect(process.env.MONGODB_URI);
-      var gfs = new Grid(conn, mongoose.mongo);
+      
+      const gfs = new Grid(conn, mongoose.mongo);
       // for uploading images
       
      
-      var writeStream = gfs.createWriteStream({
+      const writeStream = gfs.createWriteStream({
           filename: req.file.originalname,
           mode: 'w',
           content_type: req.file.mimetype
       });
       
-
-      
-        writeStream.on('close', function() {
-          return res.status(200).send({
-          message: 'Success'
+      fs.createReadStream(req.file.path).pipe(writeStream);
+      writeStream.on('close', (file) => {
+          fs.unlink(req.file.path, (error) => {
+              if (error) throw error;
+              return res.json({ file });
           });
         });
-    
-
-      writeStream.end();
       
-      
-
-      await Post.create(newPost);
-      res.redirect('/dashboard');
 
     } catch (error) {
-      console.log(error);
-
+      return res.status(400).json({ message: 'Error uploading file', error: error });
+      
     }
 
 
@@ -450,13 +445,13 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       });
       fs.createReadStream(req.file.path).pipe(writeStream);
       writeStream.on('close', (file) => {
-          fs.unlink(req.file.path, (err) => {
-              if (err) throw err;
+          fs.unlink(req.file.path, (error) => {
+              if (error) throw error;
               return res.json({ file });
           });
       });
-  } catch (err) {
-      return res.status(400).json({ message: 'Error uploading file', error: err });
+  } catch (error) {
+      return res.status(400).json({ message: 'Error uploading file', error: error });
   }
 });
 
